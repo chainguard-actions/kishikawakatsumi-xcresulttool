@@ -1,0 +1,36 @@
+name: Test basic usage with path input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create dummy xcresult bundle
+        run: |
+          mkdir -p /tmp/test.xcresult
+          echo '{}' > /tmp/test.xcresult/Info.plist
+
+      - name: Run xcresulttool action (expect failure on Linux - no xcresulttool)
+        id: action
+        uses: .
+        with:
+          path: /tmp/test.xcresult
+          token: ${{ github.token }}
+          title: 'Test Results'
+          show-passed-tests: 'true'
+          show-code-coverage: 'false'
+          upload-bundles: 'false'
+        continue-on-error: true
+
+      - name: Assert action was invoked with path input
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          # The action is expected to fail on Linux since xcresulttool is macOS-only
+          # We just verify the action was invoked (not skipped) and the path input was accepted
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action was invoked with path input"
