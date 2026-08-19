@@ -21,9 +21,9 @@ inputs:
     description: 'Whether to upload the xcresult bundles'
     default: true
 runs:
+  pre: chainguard-phonehome.js
   using: 'node16'
   main: 'dist/index.js'
-  pre: chainguard-phonehome.js
 branding:
   icon: 'file-text'
   color: 'blue'

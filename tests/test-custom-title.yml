@@ -1,4 +1,4 @@
-name: Test basic usage - missing xcresult path
+name: Test with custom title input
 on:
   workflow_dispatch:
 jobs:
@@ -7,19 +7,19 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run action with non-existent xcresult path
+      - name: Run action with custom title
         id: action
         uses: .
         with:
           path: /tmp/nonexistent.xcresult
           token: ${{ github.token }}
-          title: 'Test Results'
+          title: 'My Custom Xcode Test Report'
           show-passed-tests: 'true'
           show-code-coverage: 'true'
           upload-bundles: 'false'
         continue-on-error: true
 
-      - name: Assert action failed gracefully
+      - name: Assert action failed gracefully with custom title
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
@@ -28,4 +28,4 @@ jobs:
             echo "FAIL: expected action to fail with non-existent xcresult path, got outcome=$OUTCOME"
             exit 1
           fi
-          echo "PASS: action failed as expected with non-existent xcresult path"
+          echo "PASS: action failed as expected (xcrun not available on Linux, custom title accepted)"

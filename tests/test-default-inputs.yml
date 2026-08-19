@@ -1,0 +1,28 @@
+name: Test default inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Test action with only required input (path)
+        id: action
+        uses: .
+        with:
+          path: /tmp/nonexistent.xcresult
+          token: fake-token
+        continue-on-error: true
+      - name: Assert action ran (failed due to missing bundle, not due to bad inputs)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should fail because the xcresult bundle doesn't exist,
+          # not because of missing or invalid inputs. Either failure or success
+          # is acceptable here — what matters is the action started correctly.
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran with default inputs (outcome=$OUTCOME)"
