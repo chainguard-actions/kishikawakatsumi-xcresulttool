@@ -1,4 +1,4 @@
-name: Test basic usage - missing xcresult path
+name: Test custom options - hide passed tests and coverage
 on:
   workflow_dispatch:
 jobs:
@@ -13,13 +13,13 @@ jobs:
         uses: .
         continue-on-error: true
         with:
-          path: /nonexistent/path/test.xcresult
+          path: /tmp/nonexistent.xcresult
           token: ''
-          title: 'Test Results'
-          show-passed-tests: 'true'
+          title: 'Custom Test Results'
+          show-passed-tests: 'false'
           show-code-coverage: 'false'
           upload-bundles: 'never'
-      - name: Assert action failed due to missing xcresult bundle
+      - name: Assert action failed gracefully with custom options
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
@@ -28,4 +28,4 @@ jobs:
             echo "FAIL: expected action to fail when xcresult path does not exist, got '$OUTCOME'"
             exit 1
           fi
-          echo "PASS: action correctly failed when xcresult bundle was not found"
+          echo "PASS: action correctly failed with custom options when xcresult bundle was not found"

@@ -1,0 +1,36 @@
+name: Test xcrun unavailable on Linux
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal fake xcresult bundle directory
+        run: |
+          mkdir -p /tmp/fake/Test.xcresult
+          echo '{}' > /tmp/fake/Test.xcresult/Info.plist
+
+      - name: Run action with fake xcresult path (expect failure - xcrun not available on Linux)
+        id: action
+        uses: .
+        with:
+          path: /tmp/fake/Test.xcresult
+          token: ${{ github.token }}
+          title: 'Test Results'
+          show-passed-tests: 'true'
+          show-code-coverage: 'false'
+          upload-bundles: 'never'
+        continue-on-error: true
+
+      - name: Assert action failed because xcrun is not available on Linux
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail (xcrun not available on Linux), but got outcome: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when xcrun is not available"
