@@ -1,4 +1,4 @@
-name: Test basic usage - missing xcresult bundle
+name: Test with show-passed-tests and show-code-coverage disabled
 on:
   workflow_dispatch:
 jobs:
@@ -8,26 +8,25 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Create a fake xcresult directory
         run: |
-          mkdir -p /tmp/fake.xcresult
-          echo '{}' > /tmp/fake.xcresult/Info.plist
+          mkdir -p /tmp/test-options.xcresult
+          echo '{}' > /tmp/test-options.xcresult/Info.plist
       - id: action
         uses: .
         with:
-          path: /tmp/fake.xcresult
+          path: /tmp/test-options.xcresult
           token: fake-token-for-testing
-          title: 'Test Results'
-          show-passed-tests: 'true'
+          title: 'Custom Title'
+          show-passed-tests: 'false'
           show-code-coverage: 'false'
           upload-bundles: 'false'
         continue-on-error: true
-      - name: Assert action ran (pass or fail gracefully)
+      - name: Assert action ran with custom options
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "action outcome: $OUTCOME"
           # The action is expected to fail because the xcresult bundle is fake
-          # and the token is not valid, but it should not crash with an unhandled error.
-          # We accept both 'success' and 'failure' as valid outcomes.
+          # and the token is not valid, but it should not crash unexpectedly.
           if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action completed with outcome '$OUTCOME'"
           else
