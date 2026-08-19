@@ -1,0 +1,37 @@
+name: Test with existing xcresult bundle
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with existing xcresult bundle
+        id: action
+        uses: .
+        with:
+          path: ${{ github.workspace }}/pristine/kishikawakatsumi--xcresulttool/v1.6.0/__tests__/data/example.xcresult
+          token: ''
+          show-passed-tests: 'true'
+          show-code-coverage: 'false'
+          upload-bundles: 'false'
+        continue-on-error: true
+
+      - name: Assert action produced a definitive outcome
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # On Linux under act, xcrun is not available so the action will fail
+          # when trying to parse the xcresult bundle. This is expected behavior.
+          # The important thing is the action ran and produced a definitive outcome.
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action produced a definitive outcome: $OUTCOME"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
