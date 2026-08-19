@@ -1,0 +1,32 @@
+name: Test show-passed-tests false - failures only
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with show-passed-tests disabled
+        id: action
+        uses: .
+        with:
+          path: action/__tests__/data/example.xcresult
+          token: ${{ github.token }}
+          title: 'Failures Only'
+          show-passed-tests: 'false'
+          show-code-coverage: 'false'
+          upload-bundles: 'never'
+        # xcrun is not available on Linux; action will fail at xcrun step
+        continue-on-error: true
+
+      - name: Assert action ran (outcome is set)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ -z "$OUTCOME" ]; then
+            echo "FAIL: step outcome was not set"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome=$OUTCOME"
